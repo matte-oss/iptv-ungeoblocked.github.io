@@ -24,32 +24,57 @@
       line-height: 1.6;
       scroll-behavior: smooth;
     }
-    /* Warning Banner */
+    
+    /* Warning Banner - Full Screen */
     #warning-banner {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      background: rgba(0, 0, 0, 0.9);
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
       color: white;
-      padding: 15px;
+      padding: 40px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    #warning-banner h2 {
+      font-size: 2rem;
+      margin-bottom: 30px;
+      color: var(--primary);
     }
     #warning-banner p {
-      font-size: 14px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      max-width: 600px;
+    }
+    #warning-banner .repo-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: bold;
+    }
+    #warning-banner .repo-link:hover {
+      text-decoration: underline;
     }
     #accept-btn {
       background: var(--primary);
       color: white;
       border: none;
-      padding: 8px 15px;
-      border-radius: 4px;
+      padding: 15px 30px;
+      border-radius: 8px;
       cursor: pointer;
-      align-self: flex-end;
+      font-size: 16px;
+      margin-top: 20px;
+      transition: background 0.3s;
     }
+    #accept-btn:hover {
+      background: #0256cc;
+    }
+    
     /* Header */
     header {
       background: var(--dark);
@@ -61,6 +86,7 @@
       z-index: 100;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+    
     /* Player */
     #player-container {
       background: black;
@@ -76,13 +102,14 @@
     .vjs-tech {
       object-fit: fill !important;
     }
-    /* Tabs */
+    
+    /* Tabs - Fixed positioning for mobile */
     .tabs {
       display: flex;
       overflow-x: auto;
       background: var(--dark);
       position: sticky;
-      top: calc(70px + 56.25vw);
+      top: 70px; /* Only header height */
       z-index: 10;
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
@@ -97,6 +124,7 @@
     .tab-btn.active {
       background: var(--primary);
     }
+    
     /* Channels */
     .tab-content {
       display: none;
@@ -127,7 +155,8 @@
       height: 80px;
       object-fit: contain;
       padding: 10px;
-      background: white;
+      background: #f0f0f0; /* Light gray background for white logos */
+      border-bottom: 1px solid #eee;
     }
     .channel-name {
       padding: 10px;
@@ -137,6 +166,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    
     /* Popups */
     .popup {
       position: fixed;
@@ -186,6 +216,7 @@
       flex: 0;
       min-width: 50px;
     }
+    
     /* Mobile */
     @media (max-width: 768px) {
       .channel-grid {
@@ -197,14 +228,24 @@
       .popup {
         width: 90%;
       }
+      #warning-banner {
+        padding: 20px;
+      }
+      #warning-banner h2 {
+        font-size: 1.5rem;
+      }
+      #warning-banner p {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Warning Banner -->
+  <!-- Warning Banner - Full Screen -->
   <div id="warning-banner">
+    <h2>🌍 Ungeoblocked IPTV</h2>
     <p><i class="fas fa-exclamation-triangle"></i> <strong>Disclaimer:</strong> This site does not host any streams. All links point to external sources.</p>
-    <p><i class="fas fa-copyright"></i> Respect copyrights. Some channels may require subscriptions or be geo-blocked.</p>
+    <p>Open <a href="https://github.com/matte-oss/iptv-ungeoblocked" class="repo-link" target="_blank">GitHub issue for DMCA</a> requests.</p>
     <button id="accept-btn">Accept & Continue</button>
   </div>
 
@@ -232,8 +273,7 @@
   <!-- Popup Templates -->
   <div id="drm-popup" class="popup" style="display:none">
     <h3><i class="fas fa-lock"></i> DRM-Protected Channel</h3>
-    <p>This channel requires a DRM-compatible player like <strong>OTT Navigator</strong>.</p>
-    <p>Add the playlist to your player:</p>
+    <p>DRM-protected streams are not supported in this player. Add the .m3u playlist to a compatible IPTV player app:</p>
     <div class="popup-input">
       <input type="text" id="playlist-url" readonly>
       <button onclick="copyToClipboard(this.previousElementSibling.value)"><i class="fas fa-copy"></i></button>
@@ -246,7 +286,7 @@
 
   <div id="radio-popup" class="popup" style="display:none">
     <h3><i class="fas fa-volume-up"></i> Radio Channel</h3>
-    <p>Radio streams are not supported in this player. Add the playlist to a compatible app:</p>
+    <p>Radio streams are not supported in this player. Add the .m3u playlist to a compatible IPTV player app:</p>
     <div class="popup-input">
       <input type="text" id="radio-playlist-url" readonly>
       <button onclick="copyToClipboard(this.previousElementSibling.value)"><i class="fas fa-copy"></i></button>
@@ -276,27 +316,51 @@
       responsive: true
     });
 
-    // Hide warning banner
+    // Check if first visit and show warning banner
+    const hasVisited = sessionStorage.getItem('iptv-visited');
+    if (!hasVisited) {
+      document.getElementById('warning-banner').style.display = 'flex';
+    } else {
+      document.getElementById('warning-banner').style.display = 'none';
+    }
+
+    // Hide warning banner and remember visit
     document.getElementById('accept-btn').addEventListener('click', () => {
       document.getElementById('warning-banner').style.display = 'none';
+      sessionStorage.setItem('iptv-visited', 'true');
     });
 
-    // Resolve URL redirects (bit.ly etc.)
+    // Improved redirect resolution with fallback
     async function resolveRedirects(url) {
       try {
+        // Try multiple methods to resolve redirects
         const response = await fetch(url, { 
           method: 'HEAD', 
           redirect: 'follow',
-          headers: { 'Origin': window.location.origin }
+          mode: 'cors'
         });
         return response.url;
       } catch (error) {
-        console.error("Error resolving redirect:", error);
+        console.warn("CORS redirect resolution failed, trying alternative method:", error);
+        
+        // Fallback: Try to resolve common redirect services
+        if (url.includes('bit.ly') || url.includes('tinyurl.com') || url.includes('t.co')) {
+          try {
+            // Use a different approach for known redirect services
+            const proxyResponse = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+            const data = await proxyResponse.json();
+            return data.status.url || url;
+          } catch (proxyError) {
+            console.warn("Proxy resolution also failed:", proxyError);
+            return url;
+          }
+        }
+        
         return url;
       }
     }
 
-    // Parse M3U with advanced detection
+    // Parse M3U with enhanced DRM detection
     function parseM3U(m3uText) {
       const channels = [];
       const lines = m3uText.split('\n');
@@ -305,8 +369,13 @@
         if (lines[i].startsWith('#EXTINF')) {
           const isRadio = lines[i].includes('type="radio"') || 
                          lines[i].toLowerCase().includes('radio');
-          const isDrm = lines[i+1]?.includes('#KODIPROP') || 
-                       lines[i+2]?.includes('#KODIPROP');
+          
+          // Enhanced DRM detection
+          const isDrm = lines[i].includes('#KODIPROP') || 
+                       lines[i+1]?.includes('#KODIPROP') ||
+                       lines[i+2]?.includes('#KODIPROP') ||
+                       lines[i].toLowerCase().includes('drm') ||
+                       lines[i+1]?.toLowerCase().includes('drm');
           
           const nameMatch = lines[i].match(/tvg-name="([^"]+)"/) || 
                           lines[i].match(/,(.*?)$/);
@@ -370,10 +439,10 @@
             const card = document.createElement('div');
             card.className = 'channel-card';
             card.innerHTML = `
-              <img src="${channel.logo || 'https://via.placeholder.com/100?text=No+Logo'}" 
+              <img src="${channel.logo || 'https://via.placeholder.com/100x80/f0f0f0/666666?text=No+Logo'}" 
                    alt="${channel.name}" 
                    class="channel-logo"
-                   onerror="this.src='https://via.placeholder.com/100?text=No+Logo'">
+                   onerror="this.src='https://via.placeholder.com/100x80/f0f0f0/666666?text=No+Logo'">
               <div class="channel-name">${channel.name}</div>
             `;
             card.onclick = () => playChannel(channel, country);
@@ -403,22 +472,48 @@
         return;
       }
 
-      // Resolve redirects and play
+      // Enhanced stream loading with better error handling
       try {
-        const finalUrl = await resolveRedirects(channel.url);
+        let finalUrl = channel.url;
         
+        // Try to resolve redirects for known redirect services
+        if (channel.url.includes('bit.ly') || channel.url.includes('tinyurl.com') || 
+            channel.url.includes('t.co') || channel.url.includes('short')) {
+          finalUrl = await resolveRedirects(channel.url);
+        }
+        
+        // Determine stream type
+        let streamType = 'application/x-mpegURL'; // Default to HLS
+        if (finalUrl.includes('.mpd')) {
+          streamType = 'application/dash+xml';
+        } else if (finalUrl.includes('.m3u8')) {
+          streamType = 'application/x-mpegURL';
+        }
+        
+        // Load the stream
         player.src({
           src: finalUrl,
-          type: finalUrl.includes('.mpd') ? 'application/dash+xml' : 'application/x-mpegURL'
+          type: streamType,
+          withCredentials: false
         });
-        player.play();
+        
+        player.ready(() => {
+          player.play().catch(error => {
+            console.error("Playback error:", error);
+            alert(`Playback failed: ${error.message || 'Stream may be unavailable or require special player'}`);
+          });
+        });
         
         document.getElementById('now-playing').innerHTML = `
-          <p><strong>Now Playing:</strong> ${channel.name}</p>
-          ${finalUrl !== channel.url ? `<small>(Resolved from: ${channel.url})</small>` : ''}
+          <p style="color: white; padding: 10px; text-align: center;">
+            <strong>Now Playing:</strong> ${channel.name}
+            ${finalUrl !== channel.url ? `<br><small>Resolved from: ${channel.url}</small>` : ''}
+          </p>
         `;
+        
       } catch (error) {
-        alert(`Error loading stream: ${error.message}`);
+        console.error("Stream loading error:", error);
+        alert(`Error loading stream: ${error.message || 'Stream may be incompatible with web player'}`);
       }
     }
 
