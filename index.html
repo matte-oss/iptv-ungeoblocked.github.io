@@ -4,26 +4,177 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ungeoblocked IPTV</title>
+  <!-- Video.js per HLS/DASH -->
   <link href="https://unpkg.com/video.js@7.11.4/dist/video-js.min.css" rel="stylesheet">
+  <!-- Font Awesome per icone -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
-    .country { margin-bottom: 30px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
-    button { background: #0366d6; color: white; border: none; padding: 8px 12px; cursor: pointer; }
-    #player-container { margin: 20px 0; background: #000; }
+    :root {
+      --primary: #0366d6;
+      --dark: #24292e;
+      --light: #f6f8fa;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    /* Warning Banner */
+    #warning-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 15px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #warning-banner p {
+      font-size: 14px;
+    }
+    #accept-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      align-self: flex-end;
+    }
+    /* Header */
+    header {
+      background: var(--dark);
+      color: white;
+      padding: 15px 0;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    /* Player */
+    #player-container {
+      background: black;
+      margin: 0 auto;
+      max-width: 100%;
+      position: sticky;
+      top: 70px;
+      z-index: 50;
+    }
+    .video-js {
+      width: 100%;
+      aspect-ratio: 16/9;
+    }
+    /* Tabs */
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      background: var(--dark);
+      position: sticky;
+      top: calc(70px + 56.25vw); /* Altezza header + player (16:9) */
+      z-index: 10;
+    }
+    .tab-btn {
+      padding: 12px 20px;
+      background: transparent;
+      color: white;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+    }
+    /* Canali */
+    .tab-content {
+      display: none;
+      padding: 15px;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .channel-card {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .channel-card:hover {
+      transform: translateY(-5px);
+    }
+    .channel-logo {
+      width: 100%;
+      height: 80px;
+      object-fit: contain;
+      padding: 10px;
+      background: white;
+    }
+    .channel-name {
+      padding: 10px;
+      font-size: 14px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Mobile */
+    @media (max-width: 768px) {
+      .channel-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+      .channel-logo {
+        height: 60px;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>🌍 Ungeoblocked IPTV</h1>
-  <p>🚫 <em>Disclaimer: No paid channels/piracy support. Streams may require DRM-compatible players.</em></p>
-
-  <div id="countries-container">
-    <!-- Popolato dinamicamente da JS -->
+  <!-- Warning Banner -->
+  <div id="warning-banner">
+    <p><i class="fas fa-exclamation-triangle"></i> <strong>Disclaimer:</strong> Questo sito non ospita alcuno stream. Tutti i link puntano a fonti esterne. Non siamo responsabili per i contenuti trasmessi.</p>
+    <p><i class="fas fa-copyright"></i> Rispetta i diritti d'autore. Alcuni canali potrebbero richiedere abbonamenti o essere geoblocati.</p>
+    <button id="accept-btn">Accetta e continua</button>
   </div>
 
+  <!-- Header -->
+  <header>
+    <h1>🌍 Ungeoblocked IPTV</h1>
+  </header>
+
+  <!-- Player -->
   <div id="player-container">
-    <video id="iptv-player" class="video-js vjs-default-skin" controls width="640" height="360"></video>
+    <video id="iptv-player" class="video-js vjs-default-skin" controls playsinline></video>
+    <div id="now-playing"></div>
   </div>
 
+  <!-- Tabs Paesi -->
+  <div class="tabs" id="country-tabs">
+    <!-- Generati dinamicamente da JS -->
+  </div>
+
+  <!-- Contenuti dei Tab -->
+  <div id="tab-contents">
+    <!-- Generati dinamicamente da JS -->
+  </div>
+
+  <!-- Script -->
   <script src="https://unpkg.com/video.js@7.11.4/dist/video.min.js"></script>
   <script src="https://unpkg.com/@videojs/http-streaming@2.9.0/dist/videojs-http-streaming.min.js"></script>
   <script>
@@ -37,82 +188,101 @@
     ];
 
     // Inizializza player
-    const player = videojs('iptv-player', { html5: { vhs: { overrideNative: true } } });
+    const player = videojs('iptv-player', {
+      html5: { vhs: { overrideNative: true } },
+      responsive: true
+    });
 
-    // Fetcha i dati dal repo
-    async function loadCountryData(countryCode) {
-      const [channels, m3u] = await Promise.all([
-        fetch(`https://raw.githubusercontent.com/${REPO}/main/ch-list/${countryCode.toLowerCase()}.md`).then(res => res.text()),
-        fetch(`https://raw.githubusercontent.com/${REPO}/main/countries/${countryCode}.m3u`).then(res => res.text())
-      ]);
-      return { channels, m3u };
-    }
+    // Nascondi warning al click
+    document.getElementById('accept-btn').addEventListener('click', () => {
+      document.getElementById('warning-banner').style.display = 'none';
+    });
 
-    // Parsa i canali dal file .m3u
-    function parseM3U(m3uText) {
-      const channels = [];
-      const lines = m3uText.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].startsWith('#EXTINF')) {
-          const nameMatch = lines[i].match(/tvg-name="([^"]+)"/);
-          const logoMatch = lines[i].match(/tvg-logo="([^"]+)"/);
-          const url = lines[i+1];
-          if (nameMatch && url) {
-            channels.push({
-              name: nameMatch[1],
-              logo: logoMatch ? logoMatch[1] : null,
-              url: url.trim()
-            });
+    // Fetcha e parsa M3U
+    async function loadChannels(countryCode) {
+      try {
+        const m3u = await fetch(`https://raw.githubusercontent.com/${REPO}/main/countries/${countryCode}.m3u`).then(res => res.text());
+        const channels = [];
+        const lines = m3u.split('\n');
+        
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith('#EXTINF')) {
+            const name = lines[i].match(/tvg-name="([^"]+)"/)?.[1] || 'Unknown';
+            const logo = lines[i].match(/tvg-logo="([^"]+)"/)?.[1] || 'https://via.placeholder.com/100';
+            const url = lines[i+1]?.trim();
+            if (url) channels.push({ name, logo, url });
           }
         }
+        return channels;
+      } catch (error) {
+        console.error(`Error loading ${countryCode}:`, error);
+        return [];
       }
-      return channels;
     }
 
     // Genera la UI
     async function renderPage() {
-      const container = document.getElementById('countries-container');
+      const tabsContainer = document.getElementById('country-tabs');
+      const contentsContainer = document.getElementById('tab-contents');
       
+      // Crea tabs
+      COUNTRIES.forEach((country, index) => {
+        const tabBtn = document.createElement('button');
+        tabBtn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+        tabBtn.textContent = `${country.flag} ${country.name}`;
+        tabBtn.onclick = () => switchTab(country.code);
+        tabsContainer.appendChild(tabBtn);
+      });
+
+      // Crea contenuti
       for (const country of COUNTRIES) {
-        const { channels, m3u } = await loadCountryData(country.code);
-        const channelList = parseM3U(m3u);
+        const channels = await loadChannels(country.code);
+        const tabContent = document.createElement('div');
+        tabContent.className = `tab-content ${country.code === 'UK' ? 'active' : ''}`;
+        tabContent.id = `tab-${country.code}`;
         
-        const countryHTML = `
-          <div class="country">
-            <h2>${country.flag} ${country.name}</h2>
-            <button onclick="copyToClipboard('https://tinyurl.com/ungeo${country.code.toLowerCase()}')">
-              Copy ${country.code} Playlist URL
-            </button>
-            <div class="channels">
-              <h3>Channels:</h3>
-              <ul>
-                ${channelList.slice(0, 5).map(ch => `
-                  <li>
-                    <img src="${ch.logo || 'https://via.placeholder.com/50'}" width="50">
-                    <button onclick="playStream('${ch.url}', '${ch.name}')">${ch.name}</button>
-                  </li>
-                `).join('')}
-              </ul>
-              <p><a href="ch-list/${country.code.toLowerCase()}.md">📺 View Full Channel List</a></p>
-            </div>
-          </div>
-        `;
-        container.innerHTML += countryHTML;
+        if (channels.length === 0) {
+          tabContent.innerHTML = `<p>Nessun canale disponibile per ${country.name}.</p>`;
+        } else {
+          const grid = document.createElement('div');
+          grid.className = 'channel-grid';
+          
+          channels.slice(0, 50).forEach(channel => {
+            const card = document.createElement('div');
+            card.className = 'channel-card';
+            card.innerHTML = `
+              <img src="${channel.logo}" alt="${channel.name}" class="channel-logo">
+              <div class="channel-name">${channel.name}</div>
+            `;
+            card.onclick = () => playChannel(channel);
+            grid.appendChild(card);
+          });
+          
+          tabContent.appendChild(grid);
+        }
+        
+        contentsContainer.appendChild(tabContent);
       }
     }
 
     // Funzioni di utilità
-    function playStream(url, name) {
-      player.src({ src: url, type: url.includes('.mpd') ? 'application/dash+xml' : 'application/x-mpegURL' });
-      player.play();
-      document.querySelector('#player-container h3')?.remove();
-      const title = document.createElement('h3');
-      title.textContent = `Now Playing: ${name}`;
-      document.getElementById('player-container').prepend(title);
+    function switchTab(countryCode) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      document.querySelector(`.tab-btn:nth-child(${COUNTRIES.findIndex(c => c.code === countryCode) + 1})`).classList.add('active');
+      document.getElementById(`tab-${countryCode}`).classList.add('active');
     }
 
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => alert('URL copied!'));
+    function playChannel(channel) {
+      player.src({
+        src: channel.url,
+        type: channel.url.includes('.mpd') ? 'application/dash+xml' : 'application/x-mpegURL'
+      });
+      player.play();
+      
+      const nowPlaying = document.getElementById('now-playing');
+      nowPlaying.innerHTML = `<p><strong>Now Playing:</strong> ${channel.name}</p>`;
     }
 
     // Avvia tutto
