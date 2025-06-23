@@ -14,6 +14,7 @@
       --accent: #6f42c1;
       --success: #28a745;
       --warning: #ffc107;
+      --error: #dc3545;
     }
     * {
       box-sizing: border-box;
@@ -114,83 +115,112 @@
         border-right: 1px solid #ddd;
         overflow-y: auto;
         flex-shrink: 0;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
       }
       
       .main-content {
         flex: 1;
         display: flex;
         flex-direction: column;
+        background: #000;
       }
       
       .player-section {
         flex: 1;
-        background: black;
+        background: #000;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         position: relative;
+        padding: 20px;
       }
       
       .desktop-tabs {
         display: flex;
         background: var(--dark);
-        border-bottom: 1px solid #ddd;
+        border-bottom: 2px solid var(--primary);
+        position: sticky;
+        top: 0;
+        z-index: 10;
       }
       
       .desktop-tab-btn {
-        padding: 12px 24px;
+        padding: 15px 20px;
         background: transparent;
         color: white;
         border: none;
         cursor: pointer;
         flex: 1;
-        transition: background 0.3s;
+        transition: all 0.3s;
+        font-size: 14px;
+        font-weight: 500;
+        border-bottom: 3px solid transparent;
       }
       
       .desktop-tab-btn.active {
         background: var(--primary);
+        border-bottom-color: var(--accent);
       }
       
       .desktop-tab-btn:hover:not(.active) {
         background: rgba(255,255,255,0.1);
+        border-bottom-color: rgba(255,255,255,0.3);
       }
       
       .desktop-channel-list {
         padding: 15px;
+        height: calc(100vh - 140px);
+        overflow-y: auto;
       }
       
       .desktop-channel-item {
         display: flex;
         align-items: center;
         padding: 12px;
-        border-radius: 8px;
+        border-radius: 10px;
         cursor: pointer;
         margin-bottom: 8px;
-        transition: all 0.3s;
-        border: 1px solid transparent;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        background: #fafafa;
       }
       
       .desktop-channel-item:hover {
-        background: var(--light);
+        background: linear-gradient(135deg, #f8f9ff, #e8f0ff);
         border-color: var(--primary);
-        transform: translateX(5px);
+        transform: translateX(8px);
+        box-shadow: 0 4px 15px rgba(3, 102, 214, 0.2);
       }
       
       .desktop-channel-item.playing {
         background: linear-gradient(135deg, var(--primary), var(--accent));
         color: white;
         font-weight: bold;
+        transform: translateX(8px);
+        box-shadow: 0 8px 25px rgba(3, 102, 214, 0.4);
+      }
+      
+      .desktop-channel-item.loading {
+        background: linear-gradient(135deg, #ffc107, #ff9800);
+        color: white;
+        animation: pulse 1.5s infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
       }
       
       .desktop-channel-logo {
-        width: 40px;
+        width: 50px;
         height: 40px;
         object-fit: contain;
-        border-radius: 6px;
+        border-radius: 8px;
         background: #f0f0f0;
-        margin-right: 12px;
+        margin-right: 15px;
         padding: 4px;
+        border: 1px solid #e0e0e0;
       }
       
       .desktop-channel-info {
@@ -199,31 +229,35 @@
       }
       
       .desktop-channel-name {
-        font-weight: 500;
+        font-weight: 600;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        margin-bottom: 2px;
+        margin-bottom: 4px;
+        font-size: 14px;
       }
       
       .desktop-channel-status {
-        font-size: 12px;
-        opacity: 0.7;
+        font-size: 11px;
+        opacity: 0.8;
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
+        flex-wrap: wrap;
       }
       
       .status-badge {
-        padding: 2px 6px;
-        border-radius: 10px;
+        padding: 2px 8px;
+        border-radius: 12px;
         font-size: 10px;
         font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       
       .status-drm {
-        background: var(--warning);
-        color: #333;
+        background: var(--error);
+        color: white;
       }
       
       .status-radio {
@@ -232,105 +266,125 @@
       }
       
       .status-redirect {
-        background: var(--success);
-        color: white;
+        background: var(--warning);
+        color: #333;
       }
       
       #desktop-player {
-        width: 90%;
-        max-width: 1200px;
-        aspect-ratio: 16/9;
+        width: 100%;
+        max-width: 1400px;
+        height: 80vh;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.6);
       }
       
       .desktop-now-playing {
         position: absolute;
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.8);
+        bottom: 30px;
+        left: 30px;
+        right: 30px;
+        background: rgba(0,0,0,0.9);
         color: white;
-        padding: 15px;
-        border-radius: 8px;
+        padding: 20px;
+        border-radius: 12px;
         text-align: center;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+      
+      .no-stream-message {
+        color: #888;
+        text-align: center;
+        padding: 60px 20px;
+        font-size: 18px;
+      }
+      
+      .no-stream-message i {
+        font-size: 48px;
+        margin-bottom: 20px;
+        color: #ccc;
       }
     }
     
-    /* Mobile Layout (existing styles) */
-    #player-container {
-      background: black;
-      margin: 0 auto;
-      max-width: 100%;
-      width: 100%;
-      aspect-ratio: 16/9;
-    }
-    .video-js {
-      width: 100%;
-      height: 100%;
-    }
-    .vjs-tech {
-      object-fit: fill !important;
-    }
-    
-    .tabs {
-      display: flex;
-      overflow-x: auto;
-      background: var(--dark);
-      position: sticky;
-      top: 70px;
-      z-index: 10;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
-    .tab-btn {
-      padding: 12px 20px;
-      background: transparent;
-      color: white;
-      border: none;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .tab-btn.active {
-      background: var(--primary);
-    }
-    
-    .tab-content {
-      display: none;
-      padding: 15px;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    .channel-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 15px;
-      margin-top: 15px;
-    }
-    .channel-card {
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .channel-card:hover {
-      transform: translateY(-5px);
-    }
-    .channel-logo {
-      width: 100%;
-      height: 80px;
-      object-fit: contain;
-      padding: 10px;
-      background: #f0f0f0;
-      border-bottom: 1px solid #eee;
-    }
-    .channel-name {
-      padding: 10px;
-      font-size: 14px;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    /* Mobile Layout */
+    @media (max-width: 1023px) {
+      #player-container {
+        background: black;
+        margin: 0 auto;
+        max-width: 100%;
+        width: 100%;
+        aspect-ratio: 16/9;
+      }
+      .video-js {
+        width: 100%;
+        height: 100%;
+      }
+      .vjs-tech {
+        object-fit: fill !important;
+      }
+      
+      .tabs {
+        display: flex;
+        overflow-x: auto;
+        background: var(--dark);
+        position: sticky;
+        top: 70px;
+        z-index: 10;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      }
+      .tab-btn {
+        padding: 12px 20px;
+        background: transparent;
+        color: white;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .tab-btn.active {
+        background: var(--primary);
+      }
+      
+      .tab-content {
+        display: none;
+        padding: 15px;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .channel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
+      .channel-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .channel-card:hover {
+        transform: translateY(-5px);
+      }
+      .channel-logo {
+        width: 100%;
+        height: 80px;
+        object-fit: contain;
+        padding: 10px;
+        background: #f0f0f0;
+        border-bottom: 1px solid #eee;
+      }
+      .channel-name {
+        padding: 10px;
+        font-size: 14px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
     
     /* Popups */
@@ -410,6 +464,9 @@
     
     /* Mobile Responsive */
     @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+      }
       .channel-grid {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       }
@@ -455,6 +512,10 @@
       <div class="player-section">
         <video id="desktop-player" class="video-js vjs-default-skin" controls playsinline></video>
         <div class="desktop-now-playing" id="desktop-now-playing" style="display: none;"></div>
+        <div class="no-stream-message" id="no-stream-message">
+          <i class="fas fa-tv"></i><br>
+          Select a channel to start watching
+        </div>
       </div>
     </div>
   </div>
@@ -512,20 +573,34 @@
     let isDesktop = window.innerWidth >= 1024;
     let player;
     let currentPlayingChannel = null;
+    let isLoadingStream = false;
 
     // Initialize players
     function initPlayers() {
       if (isDesktop) {
         player = videojs('desktop-player', {
           html5: { vhs: { overrideNative: true } },
-          responsive: true
+          responsive: true,
+          fluid: true,
+          preload: 'none'
         });
       } else {
         player = videojs('mobile-player', {
           html5: { vhs: { overrideNative: true } },
-          responsive: true
+          responsive: true,
+          preload: 'none'
         });
       }
+      
+      // Suppress interruption errors
+      player.on('error', function(e) {
+        const error = player.error();
+        if (error && error.code === 4 && error.message.includes('interrupted')) {
+          // Silently ignore interruption errors
+          player.error(null);
+          return;
+        }
+      });
     }
 
     // Check if first visit
@@ -541,47 +616,54 @@
       sessionStorage.setItem('iptv-visited', 'true');
     });
 
-    // Advanced redirect resolution with multiple strategies
+    // Improved redirect resolution with better Pluto TV support
     async function resolveRedirects(url) {
       try {
-        // Strategy 1: Direct resolution for known patterns
+        // Enhanced Pluto TV resolution
         if (url.includes('jmp2.uk/plu-')) {
           const channelId = url.match(/plu-([^.]+)/)?.[1];
           if (channelId) {
-            // Try multiple Pluto TV endpoints
+            // More comprehensive Pluto TV endpoints
             const endpoints = [
-              `https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/${channelId}/master.m3u8?deviceType=web&deviceMake=web&deviceModel=web&deviceVersion=1.0&appVersion=1.0&deviceLat=0&deviceLon=0&deviceDNT=0&deviceId=web&advertiserID=&embedPartner=&appName=web`,
-              `https://service-stitcher.clusters.pluto.tv/v1/stitch/embed/hls/channel/${channelId}/master.m3u8?deviceType=web`,
-              `https://stitcher.pluto.tv/stitch/hls/channel/${channelId}/master.m3u8?deviceType=web`
+              `https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/${channelId}/master.m3u8?deviceType=web&deviceMake=web&deviceModel=web&deviceVersion=1.0&appVersion=1.0&deviceLat=0&deviceLon=0&deviceDNT=0&deviceId=${Date.now()}&advertiserID=&embedPartner=&appName=web`,
+              `https://service-stitcher.clusters.pluto.tv/v1/stitch/embed/hls/channel/${channelId}/master.m3u8?deviceType=web&deviceId=${Date.now()}`,
+              `https://stitcher.pluto.tv/stitch/hls/channel/${channelId}/master.m3u8?deviceType=web&deviceId=${Date.now()}`,
+              `https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/${channelId}/master.m3u8?appName=web&appVersion=unknown&clientTime=0&deviceDNT=0&deviceId=${Date.now()}&deviceLat=0&deviceLon=0&deviceMake=Chrome&deviceModel=web&deviceType=web&deviceVersion=unknown&includeExtendedEvents=false&serverSideAds=false&sid=${Date.now()}`
             ];
             
-            for (const endpoint of endpoints) {
-              try {
-                const testResponse = await fetch(endpoint, { method: 'HEAD', mode: 'no-cors' });
-                return endpoint; // Return first working endpoint
-              } catch (e) {
-                continue;
-              }
-            }
-            return endpoints[0]; // Return first as fallback
+            // Return the first endpoint with proper device ID
+            return endpoints[0];
           }
         }
 
-        // Strategy 2: Use CORS proxy for other redirects
-        if (url.includes('tvpass.org') || url.includes('bit.ly') || url.includes('tinyurl.com')) {
-          try {
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl, { method: 'HEAD' });
-            return response.url.replace('https://api.allorigins.win/raw?url=', '');
-          } catch (proxyError) {
-            console.warn("Proxy resolution failed:", proxyError);
-          }
+        // Enhanced tvpass.org resolution
+        if (url.includes('tvpass.org')) {
+          // Try direct m3u8 conversion
+          const baseUrl = url.replace('/live/', '/live/');
+          const possibleUrls = [
+            baseUrl + '.m3u8',
+            baseUrl + '/playlist.m3u8',
+            baseUrl.replace('/hd', '') + '.m3u8',
+            baseUrl.replace('tvpass.org', 'tvpass.org/hls') + '.m3u8'
+          ];
+          
+          return possibleUrls[0]; // Return most likely working URL
         }
 
-        // Strategy 3: Try the original URL with different approaches
+        // Use multiple CORS proxies for other redirects
+        if (url.includes('bit.ly') || url.includes('tinyurl.com') || url.includes('t.co')) {
+          const proxies = [
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+            `https://cors-anywhere.herokuapp.com/${url}`,
+            url // Fallback to original
+          ];
+          
+          return proxies[0];
+        }
+
         return url;
       } catch (error) {
-        console.warn("All redirect resolution strategies failed:", error);
+        console.warn("Redirect resolution failed:", error);
         return url;
       }
     }
@@ -604,7 +686,8 @@
           for (let j = i + 1; j < lines.length && j < i + 10; j++) {
             if (lines[j].startsWith('#KODIPROP') || 
                 lines[j].includes('license_type') || 
-                lines[j].includes('license_key')) {
+                lines[j].includes('license_key') ||
+                lines[j].includes('drm-uuid')) {
               isDrm = true;
             }
             
@@ -653,6 +736,32 @@
       }
     }
 
+    // Switch desktop tab
+    function switchDesktopTab(countryCode) {
+      // Update tab buttons
+      document.querySelectorAll('.desktop-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`[onclick="switchDesktopTab('${countryCode}')"]`).classList.add('active');
+      
+      // Update channel lists
+      document.querySelectorAll('.desktop-channel-list').forEach(list => {
+        list.style.display = 'none';
+      });
+      document.getElementById(`desktop-list-${countryCode}`).style.display = 'block';
+    }
+
+    // Switch mobile tab
+    function switchMobileTab(countryCode) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`[onclick="switchMobileTab('${countryCode}')"]`).classList.add('active');
+      
+      // Update tab contents
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(`mobile-tab-${countryCode}`).classList.add('active');
+    }
+
     // Render desktop interface
     async function renderDesktop() {
       const tabsContainer = document.getElementById('desktop-tabs');
@@ -688,10 +797,11 @@
             if (channel.isRedirect) statusBadges += '<span class="status-badge status-redirect">REDIRECT</span>';
             
             item.innerHTML = `
-              <img src="${channel.logo || 'https://via.placeholder.com/40x40/f0f0f0/666666?text=TV'}" 
+              <img src="${channel.logo || 'https://via.placeholder.com/50x40/f0f0f0/666666?text=TV'}" 
                    alt="${channel.name}" 
                    class="desktop-channel-logo"
-                   onerror="this.src='https://via.placeholder.com/40x40/f0f0f0/666666?text=TV'">
+                   loading="lazy"
+                   onerror="this.src='https://via.placeholder.com/50x40/f0f0f0/666666?text=TV'">
               <div class="desktop-channel-info">
                 <div class="desktop-channel-name">${channel.name}</div>
                 <div class="desktop-channel-status">${statusBadges}</div>
@@ -706,7 +816,7 @@
       }
     }
 
-    // Render mobile interface (existing logic)
+    // Render mobile interface
     async function renderMobile() {
       const tabsContainer = document.getElementById('mobile-tabs');
       const contentsContainer = document.getElementById('mobile-tab-contents');
@@ -714,136 +824,4 @@
       COUNTRIES.forEach((country, index) => {
         const tabBtn = document.createElement('button');
         tabBtn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
-        tabBtn.textContent = `${country.flag} ${country.name}`;
-        tabBtn.onclick = () => switchMobileTab(country.code);
-        tabsContainer.appendChild(tabBtn);
-      });
-
-      for (const country of COUNTRIES) {
-        const channels = await loadChannels(country.code);
-        const tabContent = document.createElement('div');
-        tabContent.className = `tab-content ${country.code === 'UK' ? 'active' : ''}`;
-        tabContent.id = `mobile-tab-${country.code}`;
-        
-        if (channels.length === 0) {
-          tabContent.innerHTML = '<p>No channels available.</p>';
-        } else {
-          const grid = document.createElement('div');
-          grid.className = 'channel-grid';
-          
-          channels.forEach(channel => {
-            const card = document.createElement('div');
-            card.className = 'channel-card';
-            card.innerHTML = `
-              <img src="${channel.logo || 'https://via.placeholder.com/100x80/f0f0f0/666666?text=No+Logo'}" 
-                   alt="${channel.name}" 
-                   class="channel-logo"
-                   onerror="this.src='https://via.placeholder.com/100x80/f0f0f0/666666?text=No+Logo'">
-              <div class="channel-name">${channel.name}</div>
-            `;
-            card.onclick = () => playChannel(channel, country);
-            grid.appendChild(card);
-          });
-          
-          tabContent.appendChild(grid);
-        }
-        
-        contentsContainer.appendChild(tabContent);
-      }
-    }
-
-    // Enhanced play channel function
-    async function playChannel(channel, country, desktopItem = null) {
-      // Handle radio channels
-      if (channel.isRadio) {
-        document.getElementById('radio-playlist-url').value = country.shortUrl;
-        document.getElementById('radio-popup').style.display = 'block';
-        return;
-      }
-
-      // Handle DRM channels
-      if (channel.isDrm) {
-        document.getElementById('playlist-url').value = country.shortUrl;
-        document.getElementById('drm-popup').style.display = 'block';
-        return;
-      }
-
-      try {
-        // Update UI state
-        if (currentPlayingChannel) {
-          currentPlayingChannel.classList.remove('playing');
-        }
-        if (desktopItem) {
-          desktopItem.classList.add('playing');
-          currentPlayingChannel = desktopItem;
-        }
-
-        // Show loading state
-        const nowPlayingEl = isDesktop ? 
-          document.getElementById('desktop-now-playing') : 
-          document.getElementById('mobile-now-playing');
-        
-        nowPlayingEl.innerHTML = `
-          <div style="color: white; text-align: center;">
-            <i class="fas fa-spinner fa-spin"></i> Loading ${channel.name}...
-            ${channel.isRedirect ? '<br><small>Resolving redirect...</small>' : ''}
-          </div>
-        `;
-        nowPlayingEl.style.display = 'block';
-
-        // Resolve URL if needed
-        let finalUrl = channel.url;
-        if (channel.isRedirect) {
-          finalUrl = await resolveRedirects(channel.url);
-          console.log(`Resolved ${channel.url} -> ${finalUrl}`);
-        }
-
-        // Configure stream
-        let streamType = 'application/x-mpegURL';
-        if (finalUrl.includes('.mpd')) {
-          streamType = 'application/dash+xml';
-        }
-
-        // Stop current playback
-        if (!player.paused()) {
-          player.pause();
-        }
-        player.reset();
-
-        // Load new stream
-        player.src({
-          src: finalUrl,
-          type: streamType,
-          withCredentials: false
-        });
-
-        // Handle playback
-        player.ready(() => {
-          player.load();
-          
-          const playPromise = player.play();
-          if (playPromise !== undefined) {
-            playPromise.then(() => {
-              nowPlayingEl.innerHTML = `
-                <div style="color: white; text-align: center;">
-                  <strong>📺 ${channel.name}</strong>
-                  ${finalUrl !== channel.url ? '<br><small>🔗 Redirect resolved</small>' : ''}
-                  ${channel.isRedirect ? '<br><small>✅ Stream loaded</small>' : ''}
-                </div>
-              `;
-            }).catch(error => {
-              console.error("Play failed:", error);
-              nowPlayingEl.innerHTML = `
-                <div style="color: #ff6b6b; text-align: center;">
-                  <strong>❌ ${channel.name}</strong><br>
-                  <small>Playback failed: ${error.message}</small><br>
-                  <small>Try playlist URL: ${country.shortUrl}</small>
-                </div>
-              `;
-            });
-          }
-        });
-
-      } catch (error) {
-        console.error("Stream loading error:", error);
-        const nowPlaying
+        tabBtn.textContent = `${country.
