@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ungeoblocked IPTV</title>
-  <!-- Video.js for HLS/DASH -->
   <link href="https://unpkg.com/video.js@7.11.4/dist/video-js.min.css" rel="stylesheet">
-  <!-- Font Awesome icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -24,6 +22,7 @@
       background: var(--light);
       color: var(--dark);
       line-height: 1.6;
+      scroll-behavior: smooth;
     }
     /* Warning Banner */
     #warning-banner {
@@ -60,6 +59,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     /* Player */
     #player-container {
@@ -73,7 +73,6 @@
       width: 100%;
       height: 100%;
     }
-    /* Remove black bars */
     .vjs-tech {
       object-fit: fill !important;
     }
@@ -85,6 +84,7 @@
       position: sticky;
       top: calc(70px + 56.25vw);
       z-index: 10;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
     .tab-btn {
       padding: 12px 20px;
@@ -153,6 +153,9 @@
     }
     .popup h3 {
       margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .popup-actions {
       display: flex;
@@ -181,6 +184,7 @@
     .popup-input button {
       border-radius: 0 4px 4px 0;
       flex: 0;
+      min-width: 50px;
     }
     /* Mobile */
     @media (max-width: 768px) {
@@ -277,22 +281,58 @@
       document.getElementById('warning-banner').style.display = 'none';
     });
 
-    // Load channels from M3U
+    // Resolve URL redirects (bit.ly etc.)
+    async function resolveRedirects(url) {
+      try {
+        const response = await fetch(url, { 
+          method: 'HEAD', 
+          redirect: 'follow',
+          headers: { 'Origin': window.location.origin }
+        });
+        return response.url;
+      } catch (error) {
+        console.error("Error resolving redirect:", error);
+        return url;
+      }
+    }
+
+    // Parse M3U with advanced detection
+    function parseM3U(m3uText) {
+      const channels = [];
+      const lines = m3uText.split('\n');
+      
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith('#EXTINF')) {
+          const isRadio = lines[i].includes('type="radio"') || 
+                         lines[i].toLowerCase().includes('radio');
+          const isDrm = lines[i+1]?.includes('#KODIPROP') || 
+                       lines[i+2]?.includes('#KODIPROP');
+          
+          const nameMatch = lines[i].match(/tvg-name="([^"]+)"/) || 
+                          lines[i].match(/,(.*?)$/);
+          const name = nameMatch ? nameMatch[1].trim() : 'Unknown';
+          
+          const channel = {
+            name: name,
+            logo: lines[i].match(/tvg-logo="([^"]+)"/)?.[1] || '',
+            url: lines[i+1]?.trim(),
+            isRadio,
+            isDrm
+          };
+          
+          if (channel.url && !channel.url.startsWith('#')) {
+            channels.push(channel);
+          }
+        }
+      }
+      return channels;
+    }
+
+    // Load channels from GitHub
     async function loadChannels(countryCode) {
       try {
         const m3u = await fetch(`https://raw.githubusercontent.com/${REPO}/main/countries/${countryCode}.m3u`).then(res => res.text());
-        const channels = [];
-        const lines = m3u.split('\n');
-        
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].startsWith('#EXTINF')) {
-            const name = lines[i].match(/tvg-name="([^"]+)"/)?.[1] || 'Unknown';
-            const logo = lines[i].match(/tvg-logo="([^"]+)"/)?.[1] || 'https://via.placeholder.com/100';
-            const url = lines[i+1]?.trim();
-            if (url) channels.push({ name, logo, url, isDrm: lines[i].includes('#KODIPROP') });
-          }
-        }
-        return channels;
+        return parseM3U(m3u);
       } catch (error) {
         console.error(`Error loading ${countryCode}:`, error);
         return [];
@@ -326,13 +366,14 @@
           const grid = document.createElement('div');
           grid.className = 'channel-grid';
           
-          channels.slice(0, 100).forEach(channel => {
-            if (channel.name.toLowerCase().includes('radio')) return; // Skip radios
-            
+          channels.forEach(channel => {
             const card = document.createElement('div');
             card.className = 'channel-card';
             card.innerHTML = `
-              <img src="${channel.logo}" alt="${channel.name}" class="channel-logo">
+              <img src="${channel.logo || 'https://via.placeholder.com/100?text=No+Logo'}" 
+                   alt="${channel.name}" 
+                   class="channel-logo"
+                   onerror="this.src='https://via.placeholder.com/100?text=No+Logo'">
               <div class="channel-name">${channel.name}</div>
             `;
             card.onclick = () => playChannel(channel, country);
@@ -347,9 +388,9 @@
     }
 
     // Play channel handler
-    function playChannel(channel, country) {
-      // Skip radio channels
-      if (channel.name.toLowerCase().includes('radio')) {
+    async function playChannel(channel, country) {
+      // Handle radio channels
+      if (channel.isRadio) {
         document.getElementById('radio-playlist-url').value = country.shortUrl;
         document.getElementById('radio-popup').style.display = 'block';
         return;
@@ -362,16 +403,23 @@
         return;
       }
 
-      // Play normal stream
-      player.src({
-        src: channel.url,
-        type: channel.url.includes('.mpd') ? 'application/dash+xml' : 'application/x-mpegURL'
-      });
-      player.play();
-      
-      // Update "Now Playing"
-      const nowPlaying = document.getElementById('now-playing');
-      nowPlaying.innerHTML = `<p><strong>Now Playing:</strong> ${channel.name}</p>`;
+      // Resolve redirects and play
+      try {
+        const finalUrl = await resolveRedirects(channel.url);
+        
+        player.src({
+          src: finalUrl,
+          type: finalUrl.includes('.mpd') ? 'application/dash+xml' : 'application/x-mpegURL'
+        });
+        player.play();
+        
+        document.getElementById('now-playing').innerHTML = `
+          <p><strong>Now Playing:</strong> ${channel.name}</p>
+          ${finalUrl !== channel.url ? `<small>(Resolved from: ${channel.url})</small>` : ''}
+        `;
+      } catch (error) {
+        alert(`Error loading stream: ${error.message}`);
+      }
     }
 
     // Utility functions
@@ -379,12 +427,13 @@
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
       
-      document.querySelector(`.tab-btn:nth-child(${COUNTRIES.findIndex(c => c.code === countryCode) + 1})`).classList.add('active');
+      const tabIndex = COUNTRIES.findIndex(c => c.code === countryCode);
+      document.querySelector(`.tab-btn:nth-child(${tabIndex + 1})`).classList.add('active');
       document.getElementById(`tab-${countryCode}`).classList.add('active');
     }
 
     function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+      navigator.clipboard.writeText(text).then(() => alert('URL copied to clipboard!'));
     }
 
     function closePopup(id) {
