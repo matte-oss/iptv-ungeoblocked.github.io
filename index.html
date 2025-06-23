@@ -11,6 +11,9 @@
       --primary: #0366d6;
       --dark: #24292e;
       --light: #f6f8fa;
+      --accent: #6f42c1;
+      --success: #28a745;
+      --warning: #ffc107;
     }
     * {
       box-sizing: border-box;
@@ -87,7 +90,172 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     
-    /* Player */
+    /* Layout Detection */
+    .desktop-layout {
+      display: none;
+    }
+    .mobile-layout {
+      display: block;
+    }
+    
+    /* Desktop Layout */
+    @media (min-width: 1024px) {
+      .desktop-layout {
+        display: flex;
+        height: calc(100vh - 70px);
+      }
+      .mobile-layout {
+        display: none;
+      }
+      
+      .sidebar {
+        width: 350px;
+        background: white;
+        border-right: 1px solid #ddd;
+        overflow-y: auto;
+        flex-shrink: 0;
+      }
+      
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .player-section {
+        flex: 1;
+        background: black;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+      
+      .desktop-tabs {
+        display: flex;
+        background: var(--dark);
+        border-bottom: 1px solid #ddd;
+      }
+      
+      .desktop-tab-btn {
+        padding: 12px 24px;
+        background: transparent;
+        color: white;
+        border: none;
+        cursor: pointer;
+        flex: 1;
+        transition: background 0.3s;
+      }
+      
+      .desktop-tab-btn.active {
+        background: var(--primary);
+      }
+      
+      .desktop-tab-btn:hover:not(.active) {
+        background: rgba(255,255,255,0.1);
+      }
+      
+      .desktop-channel-list {
+        padding: 15px;
+      }
+      
+      .desktop-channel-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-bottom: 8px;
+        transition: all 0.3s;
+        border: 1px solid transparent;
+      }
+      
+      .desktop-channel-item:hover {
+        background: var(--light);
+        border-color: var(--primary);
+        transform: translateX(5px);
+      }
+      
+      .desktop-channel-item.playing {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+        font-weight: bold;
+      }
+      
+      .desktop-channel-logo {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        border-radius: 6px;
+        background: #f0f0f0;
+        margin-right: 12px;
+        padding: 4px;
+      }
+      
+      .desktop-channel-info {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .desktop-channel-name {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+      }
+      
+      .desktop-channel-status {
+        font-size: 12px;
+        opacity: 0.7;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      
+      .status-badge {
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: bold;
+      }
+      
+      .status-drm {
+        background: var(--warning);
+        color: #333;
+      }
+      
+      .status-radio {
+        background: var(--accent);
+        color: white;
+      }
+      
+      .status-redirect {
+        background: var(--success);
+        color: white;
+      }
+      
+      #desktop-player {
+        width: 90%;
+        max-width: 1200px;
+        aspect-ratio: 16/9;
+      }
+      
+      .desktop-now-playing {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+      }
+    }
+    
+    /* Mobile Layout (existing styles) */
     #player-container {
       background: black;
       margin: 0 auto;
@@ -103,13 +271,12 @@
       object-fit: fill !important;
     }
     
-    /* Tabs - Fixed positioning for mobile */
     .tabs {
       display: flex;
       overflow-x: auto;
       background: var(--dark);
       position: sticky;
-      top: 70px; /* Only header height */
+      top: 70px;
       z-index: 10;
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
@@ -125,7 +292,6 @@
       background: var(--primary);
     }
     
-    /* Channels */
     .tab-content {
       display: none;
       padding: 15px;
@@ -155,7 +321,7 @@
       height: 80px;
       object-fit: contain;
       padding: 10px;
-      background: #f0f0f0; /* Light gray background for white logos */
+      background: #f0f0f0;
       border-bottom: 1px solid #eee;
     }
     .channel-name {
@@ -217,7 +383,32 @@
       min-width: 50px;
     }
     
-    /* Mobile */
+    /* Loading State */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #666;
+    }
+    
+    .loading::after {
+      content: '';
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ddd;
+      border-top: 2px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Mobile Responsive */
     @media (max-width: 768px) {
       .channel-grid {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -241,7 +432,7 @@
   </style>
 </head>
 <body>
-  <!-- Warning Banner - Full Screen -->
+  <!-- Warning Banner -->
   <div id="warning-banner">
     <h2>🌍 Ungeoblocked IPTV</h2>
     <p><i class="fas fa-exclamation-triangle"></i> <strong>Disclaimer:</strong> This site does not host any streams. All links point to external sources.</p>
@@ -254,23 +445,31 @@
     <h1>🌍 Ungeoblocked IPTV</h1>
   </header>
 
-  <!-- Player -->
-  <div id="player-container">
-    <video id="iptv-player" class="video-js vjs-default-skin" controls playsinline></video>
-    <div id="now-playing"></div>
+  <!-- Desktop Layout -->
+  <div class="desktop-layout">
+    <div class="sidebar">
+      <div class="desktop-tabs" id="desktop-tabs"></div>
+      <div id="desktop-channel-lists"></div>
+    </div>
+    <div class="main-content">
+      <div class="player-section">
+        <video id="desktop-player" class="video-js vjs-default-skin" controls playsinline></video>
+        <div class="desktop-now-playing" id="desktop-now-playing" style="display: none;"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- Country Tabs -->
-  <div class="tabs" id="country-tabs">
-    <!-- Generated by JavaScript -->
+  <!-- Mobile Layout -->
+  <div class="mobile-layout">
+    <div id="player-container">
+      <video id="mobile-player" class="video-js vjs-default-skin" controls playsinline></video>
+      <div id="mobile-now-playing"></div>
+    </div>
+    <div class="tabs" id="mobile-tabs"></div>
+    <div id="mobile-tab-contents"></div>
   </div>
 
-  <!-- Tab Contents -->
-  <div id="tab-contents">
-    <!-- Generated by JavaScript -->
-  </div>
-
-  <!-- Popup Templates -->
+  <!-- Popups -->
   <div id="drm-popup" class="popup" style="display:none">
     <h3><i class="fas fa-lock"></i> DRM-Protected Channel</h3>
     <p>DRM-protected streams are not supported in this player. Add the .m3u playlist to a compatible IPTV player app:</p>
@@ -310,13 +509,26 @@
       { code: "US", name: "United States", flag: "🇺🇸", shortUrl: "https://tinyurl.com/ungeous" }
     ];
 
-    // Initialize player
-    const player = videojs('iptv-player', {
-      html5: { vhs: { overrideNative: true } },
-      responsive: true
-    });
+    let isDesktop = window.innerWidth >= 1024;
+    let player;
+    let currentPlayingChannel = null;
 
-    // Check if first visit and show warning banner
+    // Initialize players
+    function initPlayers() {
+      if (isDesktop) {
+        player = videojs('desktop-player', {
+          html5: { vhs: { overrideNative: true } },
+          responsive: true
+        });
+      } else {
+        player = videojs('mobile-player', {
+          html5: { vhs: { overrideNative: true } },
+          responsive: true
+        });
+      }
+    }
+
+    // Check if first visit
     const hasVisited = sessionStorage.getItem('iptv-visited');
     if (!hasVisited) {
       document.getElementById('warning-banner').style.display = 'flex';
@@ -324,106 +536,113 @@
       document.getElementById('warning-banner').style.display = 'none';
     }
 
-    // Hide warning banner and remember visit
     document.getElementById('accept-btn').addEventListener('click', () => {
       document.getElementById('warning-banner').style.display = 'none';
       sessionStorage.setItem('iptv-visited', 'true');
     });
 
-    // Enhanced redirect resolution
+    // Advanced redirect resolution with multiple strategies
     async function resolveRedirects(url) {
       try {
-        // List of known redirect domains that need resolution
-        const redirectDomains = ['bit.ly', 'tinyurl.com', 't.co', 'short', 'jmp2.uk', 'tvpass.org'];
-        const needsRedirect = redirectDomains.some(domain => url.includes(domain));
-        
-        if (!needsRedirect) {
-          return url;
-        }
-        
-        // Try direct fetch first
-        try {
-          const response = await fetch(url, { 
-            method: 'HEAD', 
-            redirect: 'follow',
-            mode: 'no-cors' // This won't give us the final URL but won't fail due to CORS
-          });
-          // We can't get the actual URL in no-cors mode, so we'll have to try the original
-          return url;
-        } catch (directError) {
-          console.warn("Direct resolution failed:", directError);
-        }
-        
-        // For jmp2.uk and similar services, try to construct the direct URL
+        // Strategy 1: Direct resolution for known patterns
         if (url.includes('jmp2.uk/plu-')) {
           const channelId = url.match(/plu-([^.]+)/)?.[1];
           if (channelId) {
-            return `https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/${channelId}/master.m3u8?deviceType=web&deviceMake=web&deviceModel=web&deviceVersion=1.0&appVersion=1.0&deviceLat=0&deviceLon=0&deviceDNT=0&deviceId=web&advertiserID=&embedPartner=&appName=web`;
+            // Try multiple Pluto TV endpoints
+            const endpoints = [
+              `https://service-stitcher.clusters.pluto.tv/stitch/hls/channel/${channelId}/master.m3u8?deviceType=web&deviceMake=web&deviceModel=web&deviceVersion=1.0&appVersion=1.0&deviceLat=0&deviceLon=0&deviceDNT=0&deviceId=web&advertiserID=&embedPartner=&appName=web`,
+              `https://service-stitcher.clusters.pluto.tv/v1/stitch/embed/hls/channel/${channelId}/master.m3u8?deviceType=web`,
+              `https://stitcher.pluto.tv/stitch/hls/channel/${channelId}/master.m3u8?deviceType=web`
+            ];
+            
+            for (const endpoint of endpoints) {
+              try {
+                const testResponse = await fetch(endpoint, { method: 'HEAD', mode: 'no-cors' });
+                return endpoint; // Return first working endpoint
+              } catch (e) {
+                continue;
+              }
+            }
+            return endpoints[0]; // Return first as fallback
           }
         }
-        
-        // For tvpass.org, they might be using a direct stream
-        if (url.includes('tvpass.org')) {
-          // Try the original URL as some of these work directly
-          return url;
+
+        // Strategy 2: Use CORS proxy for other redirects
+        if (url.includes('tvpass.org') || url.includes('bit.ly') || url.includes('tinyurl.com')) {
+          try {
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl, { method: 'HEAD' });
+            return response.url.replace('https://api.allorigins.win/raw?url=', '');
+          } catch (proxyError) {
+            console.warn("Proxy resolution failed:", proxyError);
+          }
         }
-        
+
+        // Strategy 3: Try the original URL with different approaches
         return url;
       } catch (error) {
-        console.warn("Redirect resolution failed:", error);
+        console.warn("All redirect resolution strategies failed:", error);
         return url;
       }
     }
 
-    // Parse M3U with proper DRM detection
+    // Enhanced M3U parsing
     function parseM3U(m3uText) {
       const channels = [];
-      const lines = m3uText.split('\n').map(line => line.trim());
+      const lines = m3uText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
       
       for (let i = 0; i < lines.length; i++) {
         if (lines[i].startsWith('#EXTINF')) {
           const isRadio = lines[i].includes('type="radio"') || 
                          lines[i].toLowerCase().includes('radio');
           
-          // Look ahead for DRM properties - they come AFTER #EXTINF and BEFORE the URL
+          // Look for DRM properties in subsequent lines
           let isDrm = false;
-          let urlIndex = i + 1;
+          let urlIndex = -1;
           
-          // Check the next few lines for KODIPROP or other DRM indicators
+          // Scan next lines for KODIPROP and URL
           for (let j = i + 1; j < lines.length && j < i + 10; j++) {
             if (lines[j].startsWith('#KODIPROP') || 
                 lines[j].includes('license_type') || 
                 lines[j].includes('license_key')) {
               isDrm = true;
             }
-            // Find the actual URL (first non-comment line after EXTINF)
-            if (!lines[j].startsWith('#') && lines[j].length > 0) {
+            
+            // First non-comment line is the URL
+            if (!lines[j].startsWith('#') && urlIndex === -1) {
               urlIndex = j;
               break;
             }
           }
           
+          if (urlIndex === -1) continue; // No URL found
+          
           const nameMatch = lines[i].match(/tvg-name="([^"]+)"/) || 
                           lines[i].match(/,(.*?)$/);
           const name = nameMatch ? nameMatch[1].trim() : 'Unknown';
           
+          // Detect redirect URLs
+          const url = lines[urlIndex];
+          const isRedirect = url.includes('jmp2.uk') || url.includes('tvpass.org') || 
+                           url.includes('bit.ly') || url.includes('tinyurl.com') || 
+                           url.includes('t.co');
+          
           const channel = {
             name: name,
             logo: lines[i].match(/tvg-logo="([^"]+)"/)?.[1] || '',
-            url: lines[urlIndex],
+            url: url,
             isRadio,
-            isDrm
+            isDrm,
+            isRedirect
           };
           
-          if (channel.url && channel.url.length > 0) {
-            channels.push(channel);
-          }
+          channels.push(channel);
         }
       }
       return channels;
     }
 
-    // Load channels from GitHub
+    // Load channels
     async function loadChannels(countryCode) {
       try {
         const m3u = await fetch(`https://raw.githubusercontent.com/${REPO}/main/countries/${countryCode}.m3u`).then(res => res.text());
@@ -434,29 +653,80 @@
       }
     }
 
-    // Render the UI
-    async function renderPage() {
-      const tabsContainer = document.getElementById('country-tabs');
-      const contentsContainer = document.getElementById('tab-contents');
+    // Render desktop interface
+    async function renderDesktop() {
+      const tabsContainer = document.getElementById('desktop-tabs');
+      const listsContainer = document.getElementById('desktop-channel-lists');
       
-      // Create country tabs
+      // Create tabs
+      COUNTRIES.forEach((country, index) => {
+        const tabBtn = document.createElement('button');
+        tabBtn.className = `desktop-tab-btn ${index === 0 ? 'active' : ''}`;
+        tabBtn.textContent = `${country.flag} ${country.name}`;
+        tabBtn.onclick = () => switchDesktopTab(country.code);
+        tabsContainer.appendChild(tabBtn);
+      });
+
+      // Load all channels
+      for (const country of COUNTRIES) {
+        const channels = await loadChannels(country.code);
+        const listDiv = document.createElement('div');
+        listDiv.className = `desktop-channel-list ${country.code === 'UK' ? 'active' : ''}`;
+        listDiv.id = `desktop-list-${country.code}`;
+        listDiv.style.display = country.code === 'UK' ? 'block' : 'none';
+        
+        if (channels.length === 0) {
+          listDiv.innerHTML = '<div class="loading">Loading channels...</div>';
+        } else {
+          channels.forEach(channel => {
+            const item = document.createElement('div');
+            item.className = 'desktop-channel-item';
+            
+            let statusBadges = '';
+            if (channel.isDrm) statusBadges += '<span class="status-badge status-drm">DRM</span>';
+            if (channel.isRadio) statusBadges += '<span class="status-badge status-radio">RADIO</span>';
+            if (channel.isRedirect) statusBadges += '<span class="status-badge status-redirect">REDIRECT</span>';
+            
+            item.innerHTML = `
+              <img src="${channel.logo || 'https://via.placeholder.com/40x40/f0f0f0/666666?text=TV'}" 
+                   alt="${channel.name}" 
+                   class="desktop-channel-logo"
+                   onerror="this.src='https://via.placeholder.com/40x40/f0f0f0/666666?text=TV'">
+              <div class="desktop-channel-info">
+                <div class="desktop-channel-name">${channel.name}</div>
+                <div class="desktop-channel-status">${statusBadges}</div>
+              </div>
+            `;
+            item.onclick = () => playChannel(channel, country, item);
+            listDiv.appendChild(item);
+          });
+        }
+        
+        listsContainer.appendChild(listDiv);
+      }
+    }
+
+    // Render mobile interface (existing logic)
+    async function renderMobile() {
+      const tabsContainer = document.getElementById('mobile-tabs');
+      const contentsContainer = document.getElementById('mobile-tab-contents');
+      
       COUNTRIES.forEach((country, index) => {
         const tabBtn = document.createElement('button');
         tabBtn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
         tabBtn.textContent = `${country.flag} ${country.name}`;
-        tabBtn.onclick = () => switchTab(country.code);
+        tabBtn.onclick = () => switchMobileTab(country.code);
         tabsContainer.appendChild(tabBtn);
       });
 
-      // Create tab contents
       for (const country of COUNTRIES) {
         const channels = await loadChannels(country.code);
         const tabContent = document.createElement('div');
         tabContent.className = `tab-content ${country.code === 'UK' ? 'active' : ''}`;
-        tabContent.id = `tab-${country.code}`;
+        tabContent.id = `mobile-tab-${country.code}`;
         
         if (channels.length === 0) {
-          tabContent.innerHTML = `<p>No channels available for ${country.name}.</p>`;
+          tabContent.innerHTML = '<p>No channels available.</p>';
         } else {
           const grid = document.createElement('div');
           grid.className = 'channel-grid';
@@ -482,8 +752,8 @@
       }
     }
 
-    // Play channel handler with improved error handling
-    async function playChannel(channel, country) {
+    // Enhanced play channel function
+    async function playChannel(channel, country, desktopItem = null) {
       // Handle radio channels
       if (channel.isRadio) {
         document.getElementById('radio-playlist-url').value = country.shortUrl;
@@ -498,112 +768,82 @@
         return;
       }
 
-      // Enhanced stream loading
       try {
-        let finalUrl = await resolveRedirects(channel.url);
+        // Update UI state
+        if (currentPlayingChannel) {
+          currentPlayingChannel.classList.remove('playing');
+        }
+        if (desktopItem) {
+          desktopItem.classList.add('playing');
+          currentPlayingChannel = desktopItem;
+        }
+
+        // Show loading state
+        const nowPlayingEl = isDesktop ? 
+          document.getElementById('desktop-now-playing') : 
+          document.getElementById('mobile-now-playing');
         
-        // Determine stream type more accurately
-        let streamType = 'application/x-mpegURL'; // Default to HLS
+        nowPlayingEl.innerHTML = `
+          <div style="color: white; text-align: center;">
+            <i class="fas fa-spinner fa-spin"></i> Loading ${channel.name}...
+            ${channel.isRedirect ? '<br><small>Resolving redirect...</small>' : ''}
+          </div>
+        `;
+        nowPlayingEl.style.display = 'block';
+
+        // Resolve URL if needed
+        let finalUrl = channel.url;
+        if (channel.isRedirect) {
+          finalUrl = await resolveRedirects(channel.url);
+          console.log(`Resolved ${channel.url} -> ${finalUrl}`);
+        }
+
+        // Configure stream
+        let streamType = 'application/x-mpegURL';
         if (finalUrl.includes('.mpd')) {
           streamType = 'application/dash+xml';
         }
-        
-        // Configure player source with better options
-        const sourceConfig = {
-          src: finalUrl,
-          type: streamType,
-          withCredentials: false
-        };
-        
-        // Add CORS handling for problematic domains
-        if (finalUrl.includes('pluto.tv') || finalUrl.includes('jmp2.uk') || finalUrl.includes('tvpass.org')) {
-          sourceConfig.crossOrigin = 'anonymous';
-        }
-        
-        // Stop any current playback
+
+        // Stop current playback
         if (!player.paused()) {
           player.pause();
         }
-        
-        // Reset player and load new source
         player.reset();
-        player.src(sourceConfig);
-        
-        // Handle load and play with better error reporting
+
+        // Load new stream
+        player.src({
+          src: finalUrl,
+          type: streamType,
+          withCredentials: false
+        });
+
+        // Handle playback
         player.ready(() => {
           player.load();
           
-          // Add error event listener before attempting play
-          player.one('error', (error) => {
-            const errorObj = player.error();
-            let errorMessage = 'Stream unavailable';
-            
-            if (errorObj) {
-              switch (errorObj.code) {
-                case 1:
-                  errorMessage = 'Video loading aborted';
-                  break;
-                case 2:
-                  errorMessage = 'Network error - stream may be geo-blocked or unavailable';
-                  break;
-                case 3:
-                  errorMessage = 'Video format not supported by this browser';
-                  break;
-                case 4:
-                  errorMessage = 'Video source not found or empty';
-                  break;
-                default:
-                  errorMessage = errorObj.message || 'Unknown playback error';
-              }
-            }
-            
-            alert(`❌ ${errorMessage}\n\nTry using a dedicated IPTV app like VLC or OTT Navigator with the playlist URL: ${country.shortUrl}`);
-          });
-          
-          // Attempt to play
           const playPromise = player.play();
           if (playPromise !== undefined) {
-            playPromise.catch(error => {
+            playPromise.then(() => {
+              nowPlayingEl.innerHTML = `
+                <div style="color: white; text-align: center;">
+                  <strong>📺 ${channel.name}</strong>
+                  ${finalUrl !== channel.url ? '<br><small>🔗 Redirect resolved</small>' : ''}
+                  ${channel.isRedirect ? '<br><small>✅ Stream loaded</small>' : ''}
+                </div>
+              `;
+            }).catch(error => {
               console.error("Play failed:", error);
-              alert(`❌ Playback failed: ${error.message}\n\nThis stream may require a dedicated IPTV player. Try the playlist URL: ${country.shortUrl}`);
+              nowPlayingEl.innerHTML = `
+                <div style="color: #ff6b6b; text-align: center;">
+                  <strong>❌ ${channel.name}</strong><br>
+                  <small>Playback failed: ${error.message}</small><br>
+                  <small>Try playlist URL: ${country.shortUrl}</small>
+                </div>
+              `;
             });
           }
         });
-        
-        // Update now playing info
-        document.getElementById('now-playing').innerHTML = `
-          <p style="color: white; padding: 10px; text-align: center; background: rgba(0,0,0,0.7);">
-            <strong>📺 Now Playing:</strong> ${channel.name}
-            ${finalUrl !== channel.url ? `<br><small>🔗 Resolved URL</small>` : ''}
-          </p>
-        `;
-        
+
       } catch (error) {
         console.error("Stream loading error:", error);
-        alert(`❌ Error loading stream: ${error.message || 'Stream incompatible'}\n\nTry using the playlist URL in a dedicated IPTV app: ${country.shortUrl}`);
-      }
-    }
-
-    // Utility functions
-    function switchTab(countryCode) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      
-      const tabIndex = COUNTRIES.findIndex(c => c.code === countryCode);
-      document.querySelector(`.tab-btn:nth-child(${tabIndex + 1})`).classList.add('active');
-      document.getElementById(`tab-${countryCode}`).classList.add('active');
-    }
-
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => alert('URL copied to clipboard!'));
-    }
-
-    function closePopup(id) {
-      document.getElementById(id).style.display = 'none';
-    }
-
-    // Initialize
-    renderPage();
-  </script>
-</body>
-</html>
+        const nowPlaying
