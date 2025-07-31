@@ -1244,9 +1244,6 @@ https://linearjitp-playback.astro.com.my/dash-wv/linear/5014/default_primary.mpd
 =========================================== UK Channels ===========================================
 
 #EXTINF:-1 group-title="UK Channels" tvg-id="SkyMix.uk",Sky Mix
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-#KODIPROP:mimetype=application/vnd.apple.mpegurl
 #KODIPROP:inputstream.adaptive.license_type=clearkey
 #KODIPROP:inputstream.adaptive.license_key=2d1bc558ff4d40f5b7094313ae31c58c:078f4f836ddb48705fb10b2fcc794add
 https://d3ulpxjxf8pfh5.cloudfront.net/out/v1/316245defadc4a61bb09258e05eef128/HLS_CMAF_DRM/index.m3u8
